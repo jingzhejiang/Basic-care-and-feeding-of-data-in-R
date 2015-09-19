@@ -1,0 +1,97 @@
+---
+title: "Basic-care-and-feeding-of-data-in-R"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+learn what is **data.frame** 
+
+Firstly, loading a data.frame:
+```{r}
+library(gapminder)
+```
+most functions for inference, modelling, and graphing are happy to be passed a data.frame via a `data = `
+Get an overview of this with `str()`,then it’s nicer to look at the first bit or the last bit or a random snippet.
+
+```{r}
+str(gapminder)
+head(gapminder)
+tail(gapminder)
+gapminder[sample(nrow(gapminder), 10), ]
+names(gapminder)
+ncol(gapminder)
+length(gapminder)
+head(rownames(gapminder))
+dim(gapminder)
+nrow(gapminder)
+rownames(gapminder)
+colnames(gapminder)
+summary(gapminder)
+plot(lifeExp ~ year, gapminder)
+plot(lifeExp ~ gdpPercap, gapminder)
+plot(lifeExp ~ log(gdpPercap), gapminder)
+```
+To specify a single variable from a data.frame, use the dollar sign `$`
+```{r}
+head(gapminder$lifeExp)
+summary(gapminder$lifeExp)
+hist(gapminder$lifeExp)
+summary(gapminder$year)
+table(gapminder$year)
+class(gapminder$continent)
+summary(gapminder$continent)
+levels(gapminder$continent)
+nlevels(gapminder$continent)
+table(gapminder$continent)
+barplot(table(gapminder$continent))
+
+```
+`subset()` is a nice way to isolate bits of data.frames (and other things)
+```{r}
+subset(gapminder, subset = country == "Uruguay")
+#equals to:
+gapminder[1621:1632, ]
+
+```
+Yes, these both return the same result. But the second command is horrible for these reasons:
+
+1, It contains *Magic Numbers*. The reason for keeping rows 1621 to 1632 will be non-obvious to someone else and that includes you in a couple of weeks.
+2, It is fragile. If the rows of gapminder are reordered or if some observations are eliminated, these rows may no longer correspond to the Uruguay data.
+
+The subset() function can also be used to select certain variables via the select argument. 
+```{r}
+subset(gapminder, subset = country == "Mexico", select = c(country, year, lifeExp))
+
+
+```
+
+```{r}
+(minYear <- min(gapminder$year))
+myFit <- lm(lifeExp ~ I(year - minYear), gapminder, subset = country == "Colombia")
+summary(myFit)
+
+```
+Example: How would you compute the correlation of life expectancy and GDP per capita for the country of Colombia? The cor() function sadly does not offer the usual data = and subset = arguments. Here’s a nice way to combine with() and subset() to accomplish without unnecessary object creation and with fairly readable code.
+```{r}
+with(subset(gapminder, subset = country == "Colombia"), cor(lifeExp, gdpPercap))
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+Two important practices
+
+give variables short informative names (lifeExp versus “X5”)
+refer to variables by name, not by column number
+This will produce code that is self-documenting and more robust. 
+
+**Never ever use attach(). It is evil. **
